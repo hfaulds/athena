@@ -1,0 +1,8 @@
+{
+  "name": "athena",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/hfaulds/athena",
+  "author": "Hayden Faulds <fauldsh@gmail.com>",
+  "license": "MIT"
+}
