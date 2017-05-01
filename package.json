@@ -4,5 +4,11 @@
   "main": "index.js",
   "repository": "https://github.com/hfaulds/athena",
   "author": "Hayden Faulds <fauldsh@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "http-server"
+  },
+  "dependencies": {
+    "http-server": "^0.9.0"
+  }
 }
