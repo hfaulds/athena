@@ -7,8 +7,11 @@ var Container = PIXI.Container,
     Sprite = PIXI.Sprite;
 
 var stage = new Container(),
-    renderer = autoDetectRenderer(256, 256);
+    renderer = autoDetectRenderer(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.view);
+renderer.view.style.position = "absolute";
+renderer.view.style.display = "block";
+renderer.autoResize = true;
 
 //Use Pixi's built-in `loader` object to load an image
 PIXI.loader
