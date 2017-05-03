@@ -19,7 +19,14 @@ PIXI.loader
   .add("images/purple.png")
   .load(setup);
 
-var ship = undefined;
+var ship = {
+  x: 0,
+  y: 0,
+  vx: 0,
+  vy: 0,
+  ax: 0,
+  ay: 0,
+};
 var background = undefined;
 
 function keyboard(keyCode) {
@@ -65,15 +72,13 @@ function setup() {
   );
   stage.addChild(background);
 
-  ship = new PIXI.Sprite(
+  ship.sprite = new PIXI.Sprite(
     resources["images/sheet.json"].textures["playerShip1_red.png"]
   );
-  ship.y = 96;
-  ship.vx = 0;
-  ship.vy = 0;
-  ship.ax = 0;
-  ship.ay = 0;
-  stage.addChild(ship);
+  ship.sprite.x = window.innerWidth / 2 - ship.sprite.width / 2;
+  ship.sprite.y = window.innerHeight / 2 - ship.sprite.height / 2;
+
+  stage.addChild(ship.sprite);
 
   //Capture the keyboard arrow keys
   var left = keyboard(37),
@@ -124,10 +129,14 @@ function play() {
   ship.vy += ship.ay;
   ship.x += ship.vx;
   ship.y += ship.vy;
-  ship.x = ship.x % window.innerWidth;
-  ship.y = ship.y % window.innerHeight;
+
+  ship.sprite.x = window.innerWidth / 2 - ship.sprite.width / 2;
+  ship.sprite.y = window.innerHeight / 2 - ship.sprite.height / 2;
 
   renderer.resize(window.innerWidth, window.innerHeight);
+
   background.width = window.innerWidth;
   background.height = window.innerHeight;
+  background.tilePosition.x = -ship.x;
+  background.tilePosition.y = -ship.y;
 }
