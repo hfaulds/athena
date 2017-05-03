@@ -15,10 +15,11 @@ renderer.autoResize = true;
 
 //Use Pixi's built-in `loader` object to load an image
 PIXI.loader
-  .add("images/cat.png")
+  .add("images/sheet.json")
+  .add("images/purple.png")
   .load(setup);
 
-var cat = undefined;
+var ship = undefined;
 
 function keyboard(keyCode) {
   var key = {};
@@ -58,15 +59,22 @@ function keyboard(keyCode) {
 }
 
 function setup() {
-
-  //Create the `cat` sprite
-  cat = new PIXI.Sprite(
-    PIXI.loader.resources["images/cat.png"].texture
+  var background = new PIXI.TilingSprite(
+    resources["images/purple.png"].texture,
+    renderer.width,
+    renderer.height
   );
-  cat.y = 96;
-  cat.vx = 0;
-  cat.vy = 0;
-  stage.addChild(cat);
+  stage.addChild(background);
+
+  ship = new PIXI.Sprite(
+    resources["images/sheet.json"].textures["playerShip1_red.png"]
+  );
+  ship.y = 96;
+  ship.vx = 0;
+  ship.vy = 0;
+  ship.ax = 0;
+  ship.ay = 0;
+  stage.addChild(ship);
 
   //Capture the keyboard arrow keys
   var left = keyboard(37),
@@ -74,56 +82,29 @@ function setup() {
       right = keyboard(39),
       down = keyboard(40);
 
-  //Left arrow key `press` method
   left.press = function() {
-
-    //Change the cat's velocity when the key is pressed
-    cat.vx = -5;
-    cat.vy = 0;
+    ship.ax = -0.05;
   };
-
-  //Left arrow key `release` method
   left.release = function() {
-
-    //If the left arrow has been released, and the right arrow isn't down,
-    //and the cat isn't moving vertically:
-    //Stop the cat
-    if (!right.isDown && cat.vy === 0) {
-      cat.vx = 0;
-    }
+    ship.ax = 0;
   };
-
-  //Up
   up.press = function() {
-    cat.vy = -5;
-    cat.vx = 0;
+    ship.ay = -0.05;
   };
   up.release = function() {
-    if (!down.isDown && cat.vx === 0) {
-      cat.vy = 0;
-    }
+    ship.ay = 0;
   };
-
-  //Right
   right.press = function() {
-    cat.vx = 5;
-    cat.vy = 0;
+    ship.ax = 0.05;
   };
   right.release = function() {
-    if (!left.isDown && cat.vy === 0) {
-      cat.vx = 0;
-    }
+    ship.ax = 0;
   };
-
-  //Down
   down.press = function() {
-    cat.vy = 5;
-    cat.vx = 0;
+    ship.ay = 0.05;
   };
   down.release = function() {
-    if (!up.isDown && cat.vx === 0) {
-      cat.vy = 0;
-    }
+    ship.ay = 0;
   };
 
   //Set the game state
@@ -140,8 +121,10 @@ function gameLoop() {
 }
 
 function play() {
-
-  //Use the cat's velocity to make it move
-  cat.x += cat.vx;
-  cat.y += cat.vy
+  ship.vx += ship.ax;
+  ship.vy += ship.ay;
+  ship.x += ship.vx;
+  ship.y += ship.vy;
+  ship.x = ship.x % window.innerWidth;
+  ship.y = ship.y % window.innerHeight;
 }
