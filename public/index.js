@@ -20,6 +20,7 @@ PIXI.loader
   .load(setup);
 
 var ship = undefined;
+var background = undefined;
 
 function keyboard(keyCode) {
   var key = {};
@@ -59,10 +60,8 @@ function keyboard(keyCode) {
 }
 
 function setup() {
-  var background = new PIXI.TilingSprite(
-    resources["images/purple.png"].texture,
-    renderer.width,
-    renderer.height
+  background = new PIXI.extras.TilingSprite(
+    resources["images/purple.png"].texture
   );
   stage.addChild(background);
 
@@ -127,4 +126,8 @@ function play() {
   ship.y += ship.vy;
   ship.x = ship.x % window.innerWidth;
   ship.y = ship.y % window.innerHeight;
+
+  renderer.resize(window.innerWidth, window.innerHeight);
+  background.width = window.innerWidth;
+  background.height = window.innerHeight;
 }
