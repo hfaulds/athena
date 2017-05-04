@@ -44,7 +44,7 @@ var ship = {
 
     // Thrust: add some force in the ship direction
     if (Keyboard.up.isDown) {
-      var f = this.body.getWorldVector(Vec2(0.0, 1.0));
+      var f = this.body.getWorldVector(Vec2(0.0, 3.0));
       var p = this.body.getWorldPoint(Vec2(0.0, 2.0));
       this.body.applyLinearImpulse(f, p, true);
     }
@@ -65,7 +65,66 @@ var background = {
   },
 };
 
-var asteroid = {
+var asteroids = [];
+var Asteroid = {
+  textures: [
+    'meteorBrown_big1.png',
+    'meteorBrown_big2.png',
+    'meteorBrown_big3.png',
+    'meteorBrown_big4.png',
+    'meteorBrown_med1.png',
+    'meteorBrown_med3.png',
+    'meteorBrown_small1.png',
+    'meteorBrown_small2.png',
+    'meteorBrown_tiny1.png',
+    'meteorBrown_tiny2.png',
+    'meteorGrey_big1.png',
+    'meteorGrey_big2.png',
+    'meteorGrey_big3.png',
+    'meteorGrey_big4.png',
+    'meteorGrey_med1.png',
+    'meteorGrey_med2.png',
+    'meteorGrey_small1.png',
+    'meteorGrey_small2.png',
+  ],
+  create: function(stage, world) {
+    var asteroid = {
+      render: Asteroid.render,
+    };
+    var textureName = Asteroid.textures[
+      Math.round(Math.random() * Asteroid.textures.length)
+    ];
+    asteroid.sprite = new PIXI.Sprite(
+      resources["images/sheet.json"].textures[textureName]
+    );
+
+    asteroid.sprite.pivot = {
+      x: asteroid.sprite.width / 2,
+      y: asteroid.sprite.height / 2,
+    }
+
+    stage.addChild(asteroid.sprite);
+
+    asteroid.body = world.createKinematicBody({
+      position : Vec2(2, 2),
+      linearVelocity : Vec2(rand(0.3), rand(0.3)),
+    });
+
+    var radius = 0.9;
+    var n = 8, path = [];
+    for (var i = 0; i < n; i++) {
+      var a = i * 2 * Math.PI / n;
+      var x = radius * (Math.sin(a) + rand(0.3));
+      var y = radius * (Math.cos(a) + rand(0.3));
+      path.push(Vec2(x, y));
+    }
+
+    asteroid.body.createFixture(planck.Polygon(path), {
+      filterCategoryBits : ASTEROID,
+      filterMaskBits : SHIP
+    });
+    return asteroid;
+  },
   render: function() {
     this.sprite.x = ship.sprite.x - (this.body.getPosition().x - ship.body.getPosition().x) * 100;
     this.sprite.y = ship.sprite.y - (this.body.getPosition().y - ship.body.getPosition().y) * 100;
@@ -141,37 +200,13 @@ function setup() {
     density : 1000,
     filterCategoryBits : SHIP,
     filterMaskBits : ASTEROID
-
   });
 
-  asteroid.sprite = new PIXI.Sprite(
-    resources["images/sheet.json"].textures["meteorBrown_big1.png"]
-  );
-  asteroid.sprite.pivot = {
-    x: asteroid.sprite.width / 2,
-    y: asteroid.sprite.height / 2,
+  for(var i =0; i < 30; i++) {
+    var asteroid = Asteroid.create(stage, world)
+    asteroid.body.setPosition(Vec2(rand(10), rand(10)));
+    asteroids.push(asteroid);
   }
-
-  stage.addChild(asteroid.sprite);
-
-  asteroid.body = world.createKinematicBody({
-    position : Vec2(2, 2),
-    linearVelocity : Vec2(0, 0),
-  });
-
-  var radius = 0.9;
-  var n = 8, path = [];
-  for (var i = 0; i < n; i++) {
-    var a = i * 2 * Math.PI / n;
-    var x = radius * (Math.sin(a) + rand(0.3));
-    var y = radius * (Math.cos(a) + rand(0.3));
-    path.push(Vec2(x, y));
-  }
-
-  asteroid.body.createFixture(planck.Polygon(path), {
-    filterCategoryBits : ASTEROID,
-    filterMaskBits : SHIP
-  });
 
   //Set the game state
   state = play;
@@ -190,7 +225,7 @@ function play() {
   ship.tick();
   world.step(1 / 60);
   ship.render();
-  asteroid.render();
+  asteroids.map(function(a) { a.render() });
   background.render();
 
   renderer.resize(window.innerWidth, window.innerHeight);
