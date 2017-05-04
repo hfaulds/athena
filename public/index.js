@@ -44,7 +44,7 @@ var ship = {
 
     // Thrust: add some force in the ship direction
     if (Keyboard.up.isDown) {
-      var f = this.body.getWorldVector(Vec2(0.0, -1.0));
+      var f = this.body.getWorldVector(Vec2(0.0, 1.0));
       var p = this.body.getWorldPoint(Vec2(0.0, 2.0));
       this.body.applyLinearImpulse(f, p, true);
     }
@@ -60,15 +60,15 @@ var background = {
   render: function() {
     this.sprite.width = window.innerWidth;
     this.sprite.height = window.innerHeight;
-    this.sprite.tilePosition.x = ship.body.getPosition().x * -100;
-    this.sprite.tilePosition.y = ship.body.getPosition().y * -100;
+    this.sprite.tilePosition.x = ship.body.getPosition().x * 100;
+    this.sprite.tilePosition.y = ship.body.getPosition().y * 100;
   },
 };
 
 var asteroid = {
   render: function() {
-    this.sprite.x = (this.body.getPosition().x - ship.body.getPosition().x) * 100;
-    this.sprite.y = (this.body.getPosition().y - ship.body.getPosition().y) * 100;
+    this.sprite.x = ship.sprite.x - (this.body.getPosition().x - ship.body.getPosition().x) * 100;
+    this.sprite.y = ship.sprite.y - (this.body.getPosition().y - ship.body.getPosition().y) * 100;
     this.sprite.rotation = this.body.getAngle();
   }
 };
