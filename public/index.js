@@ -6,6 +6,13 @@ var Container = PIXI.Container,
     Texture = PIXI.Texture,
     Sprite = PIXI.Sprite;
 
+var pl = planck,
+    Vec2 = pl.Vec2;
+
+var SHIP = 2;
+var ASTEROID = 4;
+
+var world = pl.World();
 var stage = new Container(),
     renderer = autoDetectRenderer(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.view);
@@ -34,12 +41,9 @@ function keyboard(keyCode) {
   key.code = keyCode;
   key.isDown = false;
   key.isUp = true;
-  key.press = undefined;
-  key.release = undefined;
   //The `downHandler`
   key.downHandler = function(event) {
     if (event.keyCode === key.code) {
-      if (key.isUp && key.press) key.press();
       key.isDown = true;
       key.isUp = false;
     }
@@ -49,7 +53,6 @@ function keyboard(keyCode) {
   //The `upHandler`
   key.upHandler = function(event) {
     if (event.keyCode === key.code) {
-      if (key.isDown && key.release) key.release();
       key.isDown = false;
       key.isUp = true;
     }
@@ -75,41 +78,30 @@ function setup() {
   ship.sprite = new PIXI.Sprite(
     resources["images/sheet.json"].textures["playerShip1_red.png"]
   );
-  ship.sprite.x = window.innerWidth / 2 - ship.sprite.width / 2;
-  ship.sprite.y = window.innerHeight / 2 - ship.sprite.height / 2;
+  ship.sprite.pivot = {
+    x: ship.sprite.width / 2,
+    y: ship.sprite.height / 2,
+  }
 
   stage.addChild(ship.sprite);
 
-  //Capture the keyboard arrow keys
-  var left = keyboard(37),
-      up = keyboard(38),
-      right = keyboard(39),
-      down = keyboard(40);
+  ship.body = world.createBody({
+    type : 'dynamic',
+    angularDamping : 2.0,
+    linearDamping : 0.5,
+    position : Vec2(),
+  });
 
-  left.press = function() {
-    ship.ax = -0.05;
-  };
-  left.release = function() {
-    ship.ax = 0;
-  };
-  up.press = function() {
-    ship.ay = -0.05;
-  };
-  up.release = function() {
-    ship.ay = 0;
-  };
-  right.press = function() {
-    ship.ax = 0.05;
-  };
-  right.release = function() {
-    ship.ax = 0;
-  };
-  down.press = function() {
-    ship.ay = 0.05;
-  };
-  down.release = function() {
-    ship.ay = 0;
-  };
+  ship.body.createFixture(pl.Polygon([
+    Vec2(-0.15, -0.15),
+    Vec2(0, -0.1),
+    Vec2(0.15, -0.15),
+    Vec2(0, 0.2)
+  ]), {
+    density : 1000,
+    filterCategoryBits : SHIP,
+    filterMaskBits : ASTEROID
+  });
 
   //Set the game state
   state = play;
@@ -124,19 +116,37 @@ function gameLoop() {
   renderer.render(stage);
 }
 
-function play() {
-  ship.vx += ship.ax;
-  ship.vy += ship.ay;
-  ship.x += ship.vx;
-  ship.y += ship.vy;
+var left = keyboard(37),
+    up = keyboard(38),
+    right = keyboard(39),
+    down = keyboard(40);
 
-  ship.sprite.x = window.innerWidth / 2 - ship.sprite.width / 2;
-  ship.sprite.y = window.innerHeight / 2 - ship.sprite.height / 2;
+function play() {
+  // Set velocities
+  if (left.isDown && right.isUp) {
+    ship.body.applyAngularImpulse(-0.1, true);
+  } else if (right.isDown && left.isUp) {
+    ship.body.applyAngularImpulse(0.1, true);
+  }
+
+  // Thrust: add some force in the ship direction
+  if (up.isDown) {
+    var f = ship.body.getWorldVector(Vec2(0.0, 1.0));
+    var p = ship.body.getWorldPoint(Vec2(0.0, 2.0));
+    ship.body.applyLinearImpulse(f, p, true);
+  }
+
+
+  world.step(1 / 60);
+
+  ship.sprite.x = window.innerWidth / 2;
+  ship.sprite.y = window.innerHeight / 2;
+  ship.sprite.rotation = ship.body.getAngle();
 
   renderer.resize(window.innerWidth, window.innerHeight);
 
   background.width = window.innerWidth;
   background.height = window.innerHeight;
-  background.tilePosition.x = -ship.x;
-  background.tilePosition.y = -ship.y;
+  background.tilePosition.x = ship.body.getPosition().x * 100;
+  background.tilePosition.y = ship.body.getPosition().y * 100;
 }
