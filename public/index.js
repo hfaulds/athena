@@ -148,11 +148,17 @@ var Asteroid = {
       y: asteroid.sprite.height / 2,
     }
 
+    var x = rand(10);
+    x = x * x + Math.sign(x) * 2;
+    var y = rand(10);
+    y = y * x + Math.sign(y) * 2;
+    var position = Vec2(x, y);
+
     asteroid.body = world.createBody({
       type : 'dynamic',
       angularDamping : 5.0,
-      linearDamping : 5.0,
-      position : Vec2(rand(10), rand(10)),
+      position : position,
+      linearVelocity : Vec2(rand(0.1), rand(0.1)),
     });
 
     var path = [];
