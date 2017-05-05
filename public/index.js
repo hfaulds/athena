@@ -12,6 +12,8 @@ var pl = planck,
 var SHIP = 2;
 var ASTEROID = 4;
 
+var Assets = {};
+
 var world = pl.World();
 var stage = new Container(),
     renderer = autoDetectRenderer(window.innerWidth, window.innerHeight);
@@ -22,29 +24,40 @@ renderer.view.style.display = "block";
 renderer.autoResize = true;
 
 //Use Pixi's built-in `loader` object to load an image
-PIXI.loader
-  .add("images/sheet.json")
-  .add("images/purple.png")
-  .load(setup);
+fetch('/assets.json').then(function(res) {
+  return res.json();
+}).then(function(assets) {
+  Assets = assets;
+}).then(function() {
+  PIXI.loader
+    .add("images/sheet.json")
+    .add("images/purple.png")
+    .load(setup);
+});
 
 var Keyboard ={
-  left: keyboard(37),
-  up: keyboard(38),
-  right: keyboard(39),
+  left: keyboard(65), // a
+  up: keyboard(87), // w
+  right: keyboard(68), // d
+  down: keyboard(83), // s
 };
 
 var ship = {
   tick: function() {
     // Set velocities
     if (Keyboard.left.isDown && Keyboard.right.isUp) {
-      this.body.applyAngularImpulse(-0.1, true);
-    } else if (Keyboard.right.isDown && Keyboard.left.isUp) {
       this.body.applyAngularImpulse(0.1, true);
+    } else if (Keyboard.right.isDown && Keyboard.left.isUp) {
+      this.body.applyAngularImpulse(-0.1, true);
     }
 
     // Thrust: add some force in the ship direction
-    if (Keyboard.up.isDown) {
-      var f = this.body.getWorldVector(Vec2(0.0, 3.0));
+    if (Keyboard.up.isDown && Keyboard.down.isUp) {
+      var f = this.body.getWorldVector(Vec2(0.0, 1.0));
+      var p = this.body.getWorldPoint(Vec2(0.0, 2.0));
+      this.body.applyLinearImpulse(f, p, true);
+    } else if (Keyboard.down.isDown && Keyboard.up.isUp) {
+      var f = this.body.getWorldVector(Vec2(0.0, -0.2));
       var p = this.body.getWorldPoint(Vec2(0.0, 2.0));
       this.body.applyLinearImpulse(f, p, true);
     }
@@ -67,32 +80,15 @@ var background = {
 
 var asteroids = [];
 var Asteroid = {
-  textures: [
-    'meteorBrown_big1.png',
-    'meteorBrown_big2.png',
-    'meteorBrown_big3.png',
-    'meteorBrown_big4.png',
-    'meteorBrown_med1.png',
-    'meteorBrown_med3.png',
-    'meteorBrown_small1.png',
-    'meteorBrown_small2.png',
-    'meteorBrown_tiny1.png',
-    'meteorBrown_tiny2.png',
-    'meteorGrey_big1.png',
-    'meteorGrey_big2.png',
-    'meteorGrey_big3.png',
-    'meteorGrey_big4.png',
-    'meteorGrey_med1.png',
-    'meteorGrey_med2.png',
-    'meteorGrey_small1.png',
-    'meteorGrey_small2.png',
-  ],
   create: function(stage, world) {
     var asteroid = {
       render: Asteroid.render,
     };
-    var textureName = Asteroid.textures[
-      Math.round(Math.random() * Asteroid.textures.length)
+    var asset = Object.values(Assets.meteors)[
+      Math.floor(Math.random() * Object.keys(Assets.meteors).length)
+    ];
+    var textureName = asset.textures[
+      Math.floor(Math.random() * asset.textures.length)
     ];
     asteroid.sprite = new PIXI.Sprite(
       resources["images/sheet.json"].textures[textureName]
@@ -110,18 +106,14 @@ var Asteroid = {
       linearVelocity : Vec2(rand(0.3), rand(0.3)),
     });
 
-    var radius = 0.9;
-    var n = 8, path = [];
-    for (var i = 0; i < n; i++) {
-      var a = i * 2 * Math.PI / n;
-      var x = radius * (Math.sin(a) + rand(0.3));
-      var y = radius * (Math.cos(a) + rand(0.3));
-      path.push(Vec2(x, y));
+    var path = [];
+    for (var i = 0; i < asset.mesh.length; i++) {
+      path.push(Vec2(asset.mesh[i][0], asset.mesh[i][1]));
     }
 
-    asteroid.body.createFixture(planck.Polygon(path), {
-      filterCategoryBits : ASTEROID,
-      filterMaskBits : SHIP
+    asteroid.body.createFixture(pl.Polygon(path), {
+      filterCategoryBits: ASTEROID,
+      filterMaskBits: SHIP
     });
     return asteroid;
   },
@@ -176,7 +168,9 @@ function setup() {
   stage.addChild(background.sprite);
 
   ship.sprite = new PIXI.Sprite(
-    resources["images/sheet.json"].textures["playerShip1_red.png"]
+    resources["images/sheet.json"].textures[
+      Assets.ships.playerShip1.texture
+    ]
   );
   ship.sprite.pivot = {
     x: ship.sprite.width / 2,
@@ -191,18 +185,20 @@ function setup() {
     position : Vec2(),
   });
 
-  ship.body.createFixture(pl.Polygon([
-    Vec2(-0.15, -0.15),
-    Vec2(0, -0.1),
-    Vec2(0.15, -0.15),
-    Vec2(0, 0.2)
-  ]), {
-    density : 1000,
-    filterCategoryBits : SHIP,
-    filterMaskBits : ASTEROID
+  var shipMesh = Assets.ships.playerShip1.mesh;
+  var path = [];
+
+  for (var i = 0; i < shipMesh.length; i++) {
+    path.push(Vec2(shipMesh[i][0], shipMesh[i][1]));
+  }
+
+  ship.body.createFixture(pl.Polygon(path), {
+    density: 100,
+    filterCategoryBits: SHIP,
+    filterMaskBits: ASTEROID
   });
 
-  for(var i =0; i < 30; i++) {
+  for(var i =0; i < 50; i++) {
     var asteroid = Asteroid.create(stage, world)
     asteroid.body.setPosition(Vec2(rand(10), rand(10)));
     asteroids.push(asteroid);
