@@ -239,20 +239,28 @@ function rand(value) {
 }
 
 function setup() {
-  var ship = Ship.create(
-    -45,
+  var playerShip = Ship.create(
+    -315,
     [new RenderAtScreenCenter(), new KeyboardInput()],
     Vec2(-10, -10),
     world
   );
-  var background = Background.create(ship);
+  var ship = Ship.create(
+    135,
+    [new RenderRelativeTo(playerShip)],
+    Vec2(10, 10),
+    world
+  );
+  var background = Background.create(playerShip);
+
   stage.addChild(background.sprite);
   entities.push(background);
+  stage.addChild(playerShip.sprite);
+  entities.push(playerShip);
   stage.addChild(ship.sprite);
   entities.push(ship);
 
-
-  var asteroidRenderer = new RenderRelativeTo(ship);
+  var asteroidRenderer = new RenderRelativeTo(playerShip);
   for(var x = -10; x < 10; x=x+2) {
     for(var y = -10; y < 10; y=y+2) {
       if (! (Math.abs(x) == 10 && Math.abs(y) == 10) ) {
