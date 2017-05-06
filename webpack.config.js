@@ -1,9 +1,15 @@
+var webpack = require('webpack');
+
 module.exports = {
   entry: './src/index.ts',
   output: {
     filename: 'index.js',
-    path: __dirname + '/dist'
+    path: '/',
+    publicPath: 'http://localhost:3000/',
   },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin()
+  ],
   module: {
     rules: [
       {
