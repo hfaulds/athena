@@ -43,140 +43,162 @@ var Keyboard ={
   down: keyboard(83), // s
 };
 
-var Ship = {
-  create: function(world) {
-    var ship = {
-      tick: Ship.tick,
-      render: Ship.render,
-    };
-    ship.sprite = new PIXI.Sprite(
-      resources["images/sheet.json"].textures[
-        Assets.ships.playerShip1.texture
-      ]
-    );
-    ship.sprite.pivot = {
-      x: ship.sprite.width / 2,
-      y: ship.sprite.height / 2,
-    }
-
-    ship.body = world.createBody({
-      type : 'dynamic',
-      angularDamping : 2.0,
-      linearDamping : 0.5,
-      position : Vec2(),
-    });
-
-    var shipMesh = Assets.ships.playerShip1.mesh;
-    var path = [];
-
-    for (var i = 0; i < shipMesh.length; i++) {
-      path.push(Vec2(shipMesh[i][0], shipMesh[i][1]));
-    }
-
-    ship.body.createFixture(pl.Polygon(path), {
-      density: 100,
-    });
-
-    return ship;
-  },
-  tick: function() {
-    // Set velocities
-    if (Keyboard.left.isDown && Keyboard.right.isUp) {
-      this.body.applyAngularImpulse(0.1, true);
-    } else if (Keyboard.right.isDown && Keyboard.left.isUp) {
-      this.body.applyAngularImpulse(-0.1, true);
-    }
-
-    // Thrust: add some force in the ship direction
-    if (Keyboard.up.isDown && Keyboard.down.isUp) {
-      var f = this.body.getWorldVector(Vec2(0.0, 1.0));
-      var p = this.body.getWorldPoint(Vec2(0.0, 2.0));
-      this.body.applyLinearImpulse(f, p, true);
-    } else if (Keyboard.down.isDown && Keyboard.up.isUp) {
-      var f = this.body.getWorldVector(Vec2(0.0, -0.2));
-      var p = this.body.getWorldPoint(Vec2(0.0, 2.0));
-      this.body.applyLinearImpulse(f, p, true);
-    }
-  },
-  render: function() {
-    this.sprite.x = window.innerWidth / 2;
-    this.sprite.y = window.innerHeight / 2;
-    this.sprite.rotation = this.body.getAngle();
-  }
+function RenderRelativeTo(source) {
+  this.source = source
+}
+RenderRelativeTo.prototype.tick = function() {};
+RenderRelativeTo.prototype.render = function(body, sprite) {
+  sprite.x = this.source.sprite.x - (body.getPosition().x - this.source.body.getPosition().x) * 100;
+  sprite.y = this.source.sprite.y - (body.getPosition().y - this.source.body.getPosition().y) * 100;
+  sprite.rotation = body.getAngle();
 };
 
-var Background = {
-  create: function(player) {
-    var background = {
-      player: player,
-      tick: Background.tick,
-      render: Background.render,
-    };
-    background.sprite = new PIXI.extras.TilingSprite(
-      resources["images/purple.png"].texture
-    );
-    return background;
-  },
-  tick: function() {},
-  render: function() {
-    this.sprite.width = window.innerWidth;
-    this.sprite.height = window.innerHeight;
-    this.sprite.tilePosition.x = this.player.body.getPosition().x * 100;
-    this.sprite.tilePosition.y = this.player.body.getPosition().y * 100;
-  },
+function RenderAtScreenCenter() {}
+RenderAtScreenCenter.prototype.tick = function() {};
+RenderAtScreenCenter.prototype.render = function(body, sprite) {
+  sprite.x = window.innerWidth / 2;
+  sprite.y = window.innerHeight / 2;
+  sprite.rotation = body.getAngle();
 };
 
-var Asteroid = {
-  create: function(world, player) {
-    var asteroid = {
-      player: player,
-      render: Asteroid.render,
-      tick: Asteroid.tick,
-    };
-    var asset = Object.values(Assets.meteors)[
-      Math.floor(Math.random() * Object.keys(Assets.meteors).length)
-    ];
-    var textureName = asset.textures[
-      Math.floor(Math.random() * asset.textures.length)
-    ];
-    asteroid.sprite = new PIXI.Sprite(
-      resources["images/sheet.json"].textures[textureName]
-    );
-
-    asteroid.sprite.pivot = {
-      x: asteroid.sprite.width / 2,
-      y: asteroid.sprite.height / 2,
-    }
-
-    var x = rand(10);
-    x = x * x + Math.sign(x) * 2;
-    var y = rand(10);
-    y = y * x + Math.sign(y) * 2;
-    var position = Vec2(x, y);
-
-    asteroid.body = world.createBody({
-      type : 'dynamic',
-      angularDamping : 5.0,
-      position : position,
-      linearVelocity : Vec2(rand(0.1), rand(0.1)),
-    });
-
-    var path = [];
-    for (var i = 0; i < asset.mesh.length; i++) {
-      path.push(Vec2(asset.mesh[i][0], asset.mesh[i][1]));
-    }
-
-    asteroid.body.createFixture(pl.Polygon(path), {
-      density: 1000,
-    });
-    return asteroid;
-  },
-  tick: function() {},
-  render: function() {
-    this.sprite.x = this.player.sprite.x - (this.body.getPosition().x - this.player.body.getPosition().x) * 100;
-    this.sprite.y = this.player.sprite.y - (this.body.getPosition().y - this.player.body.getPosition().y) * 100;
-    this.sprite.rotation = this.body.getAngle();
+function KeyboardInput() {}
+KeyboardInput.prototype.tick = function(body) {
+  // Set velocities
+  if (Keyboard.left.isDown && Keyboard.right.isUp) {
+    body.applyAngularImpulse(0.1, true);
+  } else if (Keyboard.right.isDown && Keyboard.left.isUp) {
+    body.applyAngularImpulse(-0.1, true);
   }
+
+  // Thrust: add some force in the ship direction
+  if (Keyboard.up.isDown && Keyboard.down.isUp) {
+    var f = body.getWorldVector(Vec2(0.0, 1.0));
+    var p = body.getWorldPoint(Vec2(0.0, 2.0));
+    body.applyLinearImpulse(f, p, true);
+  } else if (Keyboard.down.isDown && Keyboard.up.isUp) {
+    var f = body.getWorldVector(Vec2(0.0, -0.2));
+    var p = body.getWorldPoint(Vec2(0.0, 2.0));
+    body.applyLinearImpulse(f, p, true);
+  }
+};
+KeyboardInput.prototype.render = function() {};
+
+function Ship(body, components, sprite) {
+  this.body = body;
+  this.components = components;
+  this.sprite = sprite;
+}
+
+Ship.create = function(angle, components, position, world) {
+  var sprite = new PIXI.Sprite(
+    resources["images/sheet.json"].textures[
+    Assets.ships.playerShip1.texture
+  ]
+  );
+  sprite.pivot = {
+    x: sprite.width / 2,
+    y: sprite.height / 2,
+  }
+
+  var body = world.createBody({
+    type : 'dynamic',
+    angularDamping : 2.0,
+    linearDamping : 0.5,
+    position : position,
+    angle : angle,
+  });
+
+  var shipMesh = Assets.ships.playerShip1.mesh;
+  var path = [];
+
+  for (var i = 0; i < shipMesh.length; i++) {
+    path.push(Vec2(shipMesh[i][0], shipMesh[i][1]));
+  }
+
+  body.createFixture(pl.Polygon(path), {
+    density: 100,
+  });
+  return new Ship(body, components, sprite);
+};
+
+Ship.prototype.tick = function() {
+  this.components.forEach(function(c) {
+    c.tick(this.body);
+  }.bind(this));
+};
+
+Ship.prototype.render = function() {
+  this.components.forEach(function(c) {
+    c.render(this.body, this.sprite);
+  }.bind(this));
+};
+
+function Background(sprite, source) {
+  this.sprite = sprite
+  this.source = source
+}
+Background.create = function(source) {
+  sprite = new PIXI.extras.TilingSprite(
+    resources["images/purple.png"].texture
+  );
+  return new Background(sprite, source);
+}
+Background.prototype.tick = function() {};
+Background.prototype.render = function() {
+  this.sprite.width = window.innerWidth;
+  this.sprite.height = window.innerHeight;
+  this.sprite.tilePosition.x = this.source.body.getPosition().x * 100;
+  this.sprite.tilePosition.y = this.source.body.getPosition().y * 100;
+};
+
+function Asteroid(body, components, sprite) {
+  this.body = body;
+  this.components = components;
+  this.sprite = sprite;
+}
+Asteroid.create = function(components, position, world) {
+  var asset = Object.values(Assets.meteors)[
+    Math.floor(Math.random() * Object.keys(Assets.meteors).length)
+  ];
+  var textureName = asset.textures[
+    Math.floor(Math.random() * asset.textures.length)
+  ];
+  var sprite = new PIXI.Sprite(
+    resources["images/sheet.json"].textures[textureName]
+  );
+
+  sprite.pivot = {
+    x: sprite.width / 2,
+    y: sprite.height / 2,
+  }
+
+  var body = world.createBody({
+    type : 'dynamic',
+    angularDamping : 5.0,
+    position : position,
+    linearVelocity : Vec2(rand(0.1), rand(0.1)),
+  });
+
+  var path = [];
+  for (var i = 0; i < asset.mesh.length; i++) {
+    path.push(Vec2(asset.mesh[i][0], asset.mesh[i][1]));
+  }
+  body.createFixture(pl.Polygon(path), {
+    density: 1000,
+  });
+  return new Asteroid(body, components, sprite);
+};
+
+Asteroid.prototype.tick = function() {
+  this.components.forEach(function(c) {
+    c.tick(this.body);
+  }.bind(this));
+};
+
+Asteroid.prototype.render = function() {
+  this.components.forEach(function(c) {
+    c.render(this.body, this.sprite);
+  }.bind(this));
 };
 
 function keyboard(keyCode) {
@@ -217,17 +239,31 @@ function rand(value) {
 }
 
 function setup() {
-  var ship = Ship.create(world);
+  var ship = Ship.create(
+    -45,
+    [new RenderAtScreenCenter(), new KeyboardInput()],
+    Vec2(-10, -10),
+    world
+  );
   var background = Background.create(ship);
   stage.addChild(background.sprite);
   entities.push(background);
   stage.addChild(ship.sprite);
   entities.push(ship);
 
-  for(var i =0; i < 50; i++) {
-    var asteroid = Asteroid.create(world, ship);
-    stage.addChild(asteroid.sprite);
-    entities.push(asteroid);
+
+  var asteroidRenderer = new RenderRelativeTo(ship);
+  for(var x = -10; x < 10; x=x+2) {
+    for(var y = -10; y < 10; y=y+2) {
+      if (! (Math.abs(x) == 10 && Math.abs(y) == 10) ) {
+        x = x + rand(1.9);
+        y = y + rand(1.9);
+        var position = Vec2(x, y);
+        var asteroid = Asteroid.create([asteroidRenderer], position, world);
+        stage.addChild(asteroid.sprite);
+        entities.push(asteroid);
+      }
+    }
   }
 
   gameLoop();
