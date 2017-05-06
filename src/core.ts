@@ -12,6 +12,8 @@ import rand from './util/rand.ts'
 export default class Core {
   readonly entities = [];
 
+  private currentTime;
+
   constructor(private stage, private renderer, private world) {}
 
   static create() {
@@ -35,6 +37,7 @@ export default class Core {
         .add("images/purple.png")
         .load(function() {
           this.setup(assets);
+          this.currentTime = window.performance.now();
           this.tick();
         }.bind(this));
     }.bind(this));
@@ -86,9 +89,20 @@ export default class Core {
 
   private tick() {
     requestAnimationFrame(this.tick.bind(this));
-    this.entities.forEach(function(a) { a.tick() });
-    this.world.step(1 / 60);
-    this.entities.forEach(function(a) { a.render() });
+
+    var newTime = window.performance.now();
+    var frameTime = (newTime - this.currentTime) / 1000;
+    this.currentTime = newTime;
+
+    while (frameTime > 0) {
+      var deltaTime = Math.min(frameTime, 1 /60);
+
+      this.entities.forEach(function(a) { a.tick() });
+      this.world.step(deltaTime);
+      this.entities.forEach(function(a) { a.render() });
+
+      frameTime -= deltaTime;
+    }
 
     this.renderer.resize(window.innerWidth, window.innerHeight);
     this.renderer.render(this.stage);
