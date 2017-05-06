@@ -6,9 +6,17 @@
   "author": "Hayden Faulds <fauldsh@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "http-server"
+    "start": "webpack-dev-server --content-base public"
+  },
+  "devDependencies": {
+    "source-map-loader": "^0.2.1",
+    "ts-loader": "^2.0.3",
+    "typescript": "^2.3.2",
+    "webpack": "^2.5.0",
+    "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "http-server": "^0.9.0"
+    "pixi.js": "^4.5.1",
+    "planck-js": "^0.1.34"
   }
 }
