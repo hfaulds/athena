@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "express": "^4.15.2",
-    "lodash": "^4.17.4",
     "machina": "^2.0.0",
     "pixi.js": "^4.5.1",
     "planck-js": "^0.1.34",

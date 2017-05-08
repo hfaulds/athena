@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var Machina = require('machina');
 
 var RTCPeerPromise = require("./rtc_peer_promise");
@@ -8,8 +7,8 @@ module.exports.default = Machina.Fsm.extend({
   initialState: "disconnected",
 
   reply: function() {
-    var event = _.first(arguments);
-    var args = _.union([event, this.id], _.slice(arguments, 1));
+    var event = arguments[0];
+    var args = [event, this.id].concat(Array.prototype.slice.call(arguments, 1));
     console.debug("client -> server", args);
     this.lobbyServer.emit.apply(this.lobbyServer, args);
   },

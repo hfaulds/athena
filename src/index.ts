@@ -1,6 +1,5 @@
 import Core from './core.ts'
 
-import * as _ from 'lodash';
 import Negotiation from './rtc/rtc_client_negotiation.js';
 import { EventEmitter } from 'events';
 import * as io from 'socket.io-client';
@@ -22,13 +21,13 @@ new Fsm({
       this.transition('joining', id);
     }.bind(this));
 
-    _.each([
+    [
       'createOffer', 'receiveOffer', 'acceptAnswer', 'addIceCandidate'
-    ], function(e) {
+    ].forEach(function(e) {
       this.lobbyServer.on(e, function() {
         var id = arguments[0];
         var negotiation = this.negotiations[id];
-        var args = _.union([e], Array.prototype.slice.call(arguments, 1));
+        var args = [e].concat(Array.prototype.slice.call(arguments, 1));
         console.debug("server -> client ", e, args);
         negotiation.handle.apply(negotiation, args);
       }.bind(this));
