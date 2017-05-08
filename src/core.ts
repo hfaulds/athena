@@ -1,13 +1,13 @@
 import * as PIXI from 'pixi.js'
 import { Vec2, World } from 'planck-js'
 
-import RenderRelativeTo from './components/RenderRelativeTo.ts'
-import RenderAtScreenCenter from './components/RenderAtScreenCenter.ts'
-import KeyboardInput from './components/KeyboardInput.ts'
-import Asteroid from './entities/Asteroid.ts'
-import Background from './entities/Background.ts'
-import Ship from './entities/Ship.ts'
-import rand from './util/rand.ts'
+import RenderRelativeTo from './components/RenderRelativeTo'
+import RenderAtScreenCenter from './components/RenderAtScreenCenter'
+import KeyboardInput from './components/KeyboardInput'
+import Asteroid from './entities/Asteroid'
+import Background from './entities/Background'
+import Ship from './entities/Ship'
+import rand from './util/rand'
 
 export default class Core {
   readonly entities = [];

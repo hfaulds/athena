@@ -1,6 +1,6 @@
 import { Vec2 } from 'planck-js'
 
-import Key from '../Key.ts'
+import Key from '../Key'
 
 var Keyboard = {
   left: Key.listen(65), // a

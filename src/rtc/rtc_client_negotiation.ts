@@ -1,9 +1,8 @@
-var Machina = require('machina');
+import { Fsm } from 'machina';
+import RTCPeerPromise from './rtc_peer_promise'
+//import RTCPeerPromise from './offline_promise'
 
-var RTCPeerPromise = require("./rtc_peer_promise");
-//var RTCPeerPromise = require("./offline_promise");
-
-module.exports.default = Machina.Fsm.extend({
+export default Fsm.extend({
   initialState: "disconnected",
 
   reply: function() {

@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { Vec2, Polygon } from 'planck-js'
 
-import rand from '../util/rand.ts'
+import rand from '../util/rand'
 
 var resources = PIXI.loader.resources;
 

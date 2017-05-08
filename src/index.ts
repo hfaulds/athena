@@ -1,6 +1,6 @@
-import Core from './core.ts'
+import Core from './core'
 
-import Negotiation from './rtc/rtc_client_negotiation.js';
+import Negotiation from './rtc/rtc_client_negotiation';
 import { EventEmitter } from 'events';
 import * as io from 'socket.io-client';
 import { Fsm } from 'machina';

@@ -17,6 +17,7 @@
     "webpack-hot-middleware": "^2.18.0"
   },
   "dependencies": {
+    "@types/sharedworker": "0.0.27",
     "express": "^4.15.2",
     "machina": "^2.0.0",
     "pixi.js": "^4.5.1",
