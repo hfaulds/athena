@@ -10,21 +10,22 @@ new Fsm({
 
   negotiations: {},
 
-  initialize : function(lobbyServer) {
-    this.lobbyServer = io(window.location.origin, {'force new connection': true});
+  initialize : function() {
+    var opts = { 'force new connection': true };
+    var lobbyServer = io(window.location.origin, opts);
 
-    this.lobbyServer.on('hosting', function(token) {
-      this.transition("hosting", token);
+    lobbyServer.on('hosting', function(token: string) {
+      this.transition("hosting", lobbyServer, token);
     }.bind(this));
 
-    this.lobbyServer.on('joining', function(id) {
-      this.transition('joining', id);
+    lobbyServer.on('joining', function(id: number) {
+      this.transition('joining', lobbyServer, id);
     }.bind(this));
 
     [
       'createOffer', 'receiveOffer', 'acceptAnswer', 'addIceCandidate'
-    ].forEach(function(e) {
-      this.lobbyServer.on(e, function() {
+    ].forEach(function(e: string) {
+      lobbyServer.on(e, function() {
         var id = arguments[0];
         var negotiation = this.negotiations[id];
         var args = [e].concat(Array.prototype.slice.call(arguments, 1));
@@ -36,22 +37,14 @@ new Fsm({
     var createButton = document.getElementById('create');
 
     createButton.onclick = function() {
-      this.lobbyServer.emit('host');
-    }.bind(this);
+      lobbyServer.emit('host');
+    };
 
     var joinButton = document.getElementById('join');
 
     joinButton.onclick = function() {
-      this.lobbyServer.emit('join');
-    }.bind(this);
-  },
-
-  join: function(id) {
-    this.lobbyServer.emit('join', id);
-  },
-
-  create: function() {
-    this.lobbyServer.emit('host');
+      lobbyServer.emit('join');
+    };
   },
 
   states : {
@@ -59,8 +52,8 @@ new Fsm({
     },
 
     "joining" : {
-      _onEnter: function(id, token) {
-        var negotiation = new Negotiation(this.lobbyServer, id, token);
+      _onEnter: function(lobbyServer, id, token) {
+        var negotiation = new Negotiation(lobbyServer, id, token);
         this.negotiations[id] = negotiation;
 
         negotiation.on('connected', function() {
@@ -78,9 +71,9 @@ new Fsm({
     },
 
     "hosting" : {
-      _onEnter: function(id, token) {
-        this.lobbyServer.on('connection', function(id) {
-          var negotiation = new Negotiation(this.lobbyServer, id, token);
+      _onEnter: function(lobbyServer, id, token) {
+        lobbyServer.on('connection', function(id) {
+          var negotiation = new Negotiation(lobbyServer, id, token);
           this.negotiations[id] = negotiation;
 
           negotiation.on('connected', function() {
