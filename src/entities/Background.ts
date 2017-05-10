@@ -4,18 +4,22 @@ import Entity from './Entity'
 
 var resources = PIXI.loader.resources;
 
-export default class Background extends Entity {
-  protected readonly sprite: PIXI.extras.TilingSprite;
+export default class Background {
 
-  constructor(sprite, readonly source: Entity) {
-    super(null, [], sprite);
-  }
+  constructor(
+    protected readonly sprite: PIXI.extras.TilingSprite,
+    readonly source: Entity
+  ) { }
 
   static create(source) {
     var sprite = new PIXI.extras.TilingSprite(
       resources["images/purple.png"].texture
     );
     return new Background(sprite, source);
+  }
+
+  public addToStage(stage: PIXI.Container) {
+    stage.addChild(this.sprite);
   }
 
   public render() {

@@ -150,4 +150,8 @@ export default Fsm.extend({
   setSimulatedPacketLoss : function(packetLoss) {
     this.simulatedPacketLoss = packetLoss;
   },
+
+  sendMessage : function(data) {
+    this.handle('sendMessage', data);
+  }
 });

@@ -56,8 +56,8 @@ new Fsm({
         var negotiation = new Negotiation(lobbyServer, id, token);
         this.negotiations[id] = negotiation;
 
-        negotiation.on('connected', function() {
-          this.transition("joined");
+        negotiation.on('receiveMessage', function(data) {
+          this.transition("joined", data);
         }.bind(this));
 
         negotiation.handle("connect");
@@ -65,24 +65,27 @@ new Fsm({
     },
 
     "joined" : {
-      _onEnter: function() {
-        Core.create().start();
+      _onEnter: function(snapshot) {
+        Core.create().loadWorld(snapshot);
       },
     },
 
     "hosting" : {
       _onEnter: function(lobbyServer, id, token) {
+        var core = Core.create();
+        core.newWorld();
+
         lobbyServer.on('connection', function(id) {
           var negotiation = new Negotiation(lobbyServer, id, token);
           this.negotiations[id] = negotiation;
 
           negotiation.on('connected', function() {
             negotiation.reply('connected');
+            negotiation.sendMessage(core.createSnapshot());
           }.bind(this));
 
           negotiation.handle("connect");
         }.bind(this));
-        Core.create().start();
       }
     },
   }

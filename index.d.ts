@@ -10,4 +10,6 @@ interface Vec2 {
 
 interface Body {
   getPosition(): Vec2;
+  getLinearVelocity(): Vec2;
+  createFixture(polygon, attributes): void;
 }

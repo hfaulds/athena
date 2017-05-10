@@ -1,9 +1,46 @@
+import * as PIXI from 'pixi.js'
+import { Vec2, Polygon } from 'planck-js'
+
+var resources = PIXI.loader.resources;
+
+function createGuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+  });
+}
+
 export default abstract class Entity {
+  private sprite: PIXI.Sprite;
+  private body: Body;
+
   constructor(
-    protected readonly body: Body,
-    protected readonly components: Array<Component>,
-    protected readonly sprite: PIXI.Sprite
-  ) { }
+    assets,
+    world,
+    private readonly bodyAttributes,
+    private readonly components: Array<Component>,
+    private readonly fixtureAttributes,
+    private readonly textureName: string,
+    public guid = createGuid(),
+  ) {
+    this.sprite = new PIXI.Sprite(
+      resources["images/sheet.json"].textures[textureName]
+    );
+    this.sprite.pivot = Vec2({
+      x: this.sprite.width / 2,
+      y: this.sprite.height / 2,
+    });
+
+
+    this.bodyAttributes = Object.assign({}, this.bodyAttributes);
+    this.body = world.createBody(bodyAttributes);
+
+    var mesh = assets["meshes"]["playerShip1"];
+    var polygon = Polygon(mesh.map(function(p) {
+      return Vec2(p[0], p[1]);
+    }));
+    this.body.createFixture(polygon, fixtureAttributes);
+  }
 
   public tick() {
     this.components.forEach(function(c) {
@@ -27,5 +64,20 @@ export default abstract class Entity {
 
   public addToStage(stage: PIXI.Container) {
     stage.addChild(this.sprite);
+  }
+
+  public createSnapshot() {
+    var bodyAttributes = Object.assign(this.bodyAttributes, {
+      position: this.getPosition(),
+      velocity: this.body.getLinearVelocity(),
+    })
+
+    return {
+      type: this.constructor.name,
+      guid: this.guid,
+      bodyAttributes: bodyAttributes,
+      fixtureAttributes: this.fixtureAttributes,
+      textureName: this.textureName
+    };
   }
 }
