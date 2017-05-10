@@ -4,17 +4,20 @@ import { Vec2, World } from 'planck-js'
 import RenderRelativeTo from './components/RenderRelativeTo'
 import RenderAtScreenCenter from './components/RenderAtScreenCenter'
 import KeyboardInput from './components/KeyboardInput'
+import Entity from './entities/Entity'
 import Asteroid from './entities/Asteroid'
 import Background from './entities/Background'
 import Ship from './entities/Ship'
 import rand from './util/rand'
 
 export default class Core {
-  readonly entities = [];
+  readonly entities: Array<Entity> = [];
 
-  private currentTime;
+  private currentTime: number;
 
-  constructor(private stage, private renderer, private world) {}
+  constructor(private stage: PIXI.Container,
+    private renderer: PIXI.WebGLRenderer | PIXI.CanvasRenderer,
+    private world) {}
 
   static create() {
     var stage = new PIXI.Container(),
@@ -59,12 +62,12 @@ export default class Core {
       this.world
     );
     var background = Background.create(playerShip);
+    background.addToStage(this.stage);
+    playerShip.addToStage(this.stage);
+    ship.addToStage(this.stage);
 
-    this.stage.addChild(background.sprite);
     this.entities.push(background);
-    this.stage.addChild(playerShip.sprite);
     this.entities.push(playerShip);
-    this.stage.addChild(ship.sprite);
     this.entities.push(ship);
 
     var asteroidRenderer = new RenderRelativeTo(playerShip);
@@ -74,13 +77,13 @@ export default class Core {
           x = x + rand(1.9);
           y = y + rand(1.9);
           var position = Vec2(x, y);
-          var asteroid = Asteroid.create(
+          var asteroid = Asteroid.createRandom(
             assets,
             [asteroidRenderer],
             position,
             this.world,
           );
-          this.stage.addChild(asteroid.sprite);
+          asteroid.addToStage(this.stage);
           this.entities.push(asteroid);
         }
       }

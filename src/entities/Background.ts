@@ -1,13 +1,14 @@
 import * as PIXI from 'pixi.js'
+
+import Entity from './Entity'
+
 var resources = PIXI.loader.resources;
 
-export default class Background {
-  readonly sprite;
-  readonly source;
+export default class Background extends Entity {
+  protected readonly sprite: PIXI.extras.TilingSprite;
 
-  constructor(sprite, source) {
-    this.sprite = sprite
-    this.source = source
+  constructor(sprite, readonly source: Entity) {
+    super(null, [], sprite);
   }
 
   static create(source) {
@@ -17,12 +18,10 @@ export default class Background {
     return new Background(sprite, source);
   }
 
-  public tick() {}
-
   public render() {
     this.sprite.width = window.innerWidth;
     this.sprite.height = window.innerHeight;
-    this.sprite.tilePosition.x = this.source.body.getPosition().x * 100;
-    this.sprite.tilePosition.y = this.source.body.getPosition().y * 100;
+    this.sprite.tilePosition.x = this.source.getPosition().x * 100;
+    this.sprite.tilePosition.y = this.source.getPosition().y * 100;
   }
 }

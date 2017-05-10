@@ -1,22 +1,13 @@
 import * as PIXI from 'pixi.js'
 import { Vec2, Polygon } from 'planck-js'
 
+import Entity from './Entity'
 import rand from '../util/rand'
 
 var resources = PIXI.loader.resources;
 
-export default class Asteroid {
-  readonly body;
-  readonly components;
-  readonly sprite;
-
-  constructor(body, components, sprite) {
-    this.body = body;
-    this.components = components;
-    this.sprite = sprite;
-  }
-
-  static create(assets, components, position, world) {
+export default class Asteroid extends Entity {
+  static createRandom(assets, components, position, world) {
     var asset = Object.values(assets["meteors"])[
       Math.floor(Math.random() * Object.keys(assets["meteors"]).length)
     ];
@@ -27,37 +18,28 @@ export default class Asteroid {
       resources["images/sheet.json"].textures[textureName]
     );
 
-    sprite.pivot = {
+    var path = asset.mesh.map(function(p) {
+      return Vec2(p[0], p[1]);
+    });
+    var polygon = Polygon(path);
+    var velocity = Vec2(rand(0.1), rand(0.1));
+    return Asteroid.create(components, polygon, position, sprite, velocity, world);
+  }
+
+  static create(components, polygon, position, sprite, velocity, world) {
+    sprite.pivot = Vec2({
       x: sprite.width / 2,
       y: sprite.height / 2,
-    }
+    });
 
     var body = world.createBody({
       type : 'dynamic',
       angularDamping : 5.0,
       position : position,
-      linearVelocity : Vec2(rand(0.1), rand(0.1)),
+      linearVelocity : velocity,
     });
 
-    var path = [];
-    for (var i = 0; i < asset.mesh.length; i++) {
-      path.push(Vec2(asset.mesh[i][0], asset.mesh[i][1]));
-    }
-    body.createFixture(Polygon(path), {
-      density: 1000,
-    });
+    body.createFixture(polygon, { density: 1000 });
     return new Asteroid(body, components, sprite);
-  }
-
-  public tick() {
-    this.components.forEach(function(c) {
-      c.tick(this.body);
-    }.bind(this));
-  }
-
-  public render() {
-    this.components.forEach(function(c) {
-      c.render(this.body, this.sprite);
-    }.bind(this));
   }
 }

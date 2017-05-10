@@ -2,9 +2,9 @@ export default class Key {
   public isDown = false;
   public isUp = true;
 
-  constructor(public code) {};
+  constructor(public code: number) {};
 
-  static listen(code) {
+  static listen(code: number) {
     let key = new Key(code);
     window.addEventListener(
       "keydown", key.downHandler.bind(key), false

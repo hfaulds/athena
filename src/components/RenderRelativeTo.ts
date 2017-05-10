@@ -1,5 +1,7 @@
+import Entity from '../entities/Entity'
+
 export default class RenderRelativeTo {
-  readonly source;
+  readonly source: Entity;
 
   constructor(source) {
     this.source = source
@@ -8,8 +10,16 @@ export default class RenderRelativeTo {
   public tick() {}
 
   public render(body, sprite) {
-    sprite.x = this.source.sprite.x - (body.getPosition().x - this.source.body.getPosition().x) * 100;
-    sprite.y = this.source.sprite.y - (body.getPosition().y - this.source.body.getPosition().y) * 100;
+    var sourcePosition = this.source.getPosition();
+    var sourceScreenPosition = this.source.getScreenPosition();
+    var bodyPosition = body.getPosition();
+
+    sprite.x = sourceScreenPosition.x - (
+      bodyPosition.x - sourcePosition.x
+    ) * 100;
+    sprite.y = sourceScreenPosition.y - (
+      bodyPosition.y - sourcePosition.y
+    ) * 100;
     sprite.rotation = body.getAngle();
   }
 }

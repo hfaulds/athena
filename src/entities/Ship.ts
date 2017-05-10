@@ -1,29 +1,21 @@
 import * as PIXI from 'pixi.js'
 import { Vec2, Polygon } from 'planck-js'
 
+import Entity from './Entity'
+
 var resources = PIXI.loader.resources;
 
-export default class Ship {
-  readonly body;
-  readonly components;
-  readonly sprite;
-
-  constructor(body, components, sprite) {
-    this.body = body;
-    this.components = components;
-    this.sprite = sprite;
-  }
-
+export default class Ship extends Entity {
   static create(assets, angle, components, position, world) {
     var sprite = new PIXI.Sprite(
       resources["images/sheet.json"].textures[
         assets["ships"]["playerShip1"].texture
       ]
     );
-    sprite.pivot = {
+    sprite.pivot = Vec2({
       x: sprite.width / 2,
       y: sprite.height / 2,
-    }
+    })
 
     var body = world.createBody({
       type : 'dynamic',
@@ -45,17 +37,5 @@ export default class Ship {
     });
 
     return new Ship(body, components, sprite);
-  }
-
-  public tick() {
-    this.components.forEach(function(c) {
-      c.tick(this.body);
-    }.bind(this));
-  }
-
-  public render() {
-    this.components.forEach(function(c) {
-      c.render(this.body, this.sprite);
-    }.bind(this));
   }
 }
