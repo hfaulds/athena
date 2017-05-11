@@ -117,6 +117,7 @@ export default Fsm.extend({
 
     "connected" : {
       "sendMessage" : function(data) {
+        console.log("peer -> peer", this.id, data);
         if(this.simulatedPacketLoss > 0) {
           if(Math.random() > this.simulatedPacketLoss / 100) return;
         }
