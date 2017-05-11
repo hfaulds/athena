@@ -1,16 +1,21 @@
 import * as PIXI from 'pixi.js'
 import { Vec2 } from 'planck-js'
+import { EventEmitter2 as EventEmitter } from 'eventemitter2';
 
 import World from './World'
+import Entity from './entities/Entity'
 
-export default class Core {
+export default class Core extends EventEmitter {
   private currentTime: number;
+  private lastUpdateTime: number = 0;
 
   constructor(
     private stage: PIXI.Container,
     private renderer: PIXI.WebGLRenderer | PIXI.CanvasRenderer,
     private world: World,
-  ) {}
+  ) {
+    super();
+  }
 
   static create(world: World) {
     var stage = new PIXI.Container(),
@@ -26,6 +31,10 @@ export default class Core {
     return new Core(stage, renderer, world);
   }
 
+  public addToStage(entity: Entity) {
+    entity.addToStage(this.stage);
+  }
+
   public tick() {
     requestAnimationFrame(this.tick.bind(this));
 
@@ -34,11 +43,15 @@ export default class Core {
     this.currentTime = newTime;
 
     while (frameTime > 0) {
-      var deltaTime = Math.min(frameTime, 1 /60);
+      var deltaTime = Math.min(frameTime, 1 / 60);
 
       this.world.tick(deltaTime);
 
       frameTime -= deltaTime;
+    }
+    if (this.currentTime - this.lastUpdateTime >= 30) {
+      this.lastUpdateTime = this.currentTime;
+      this.emit('tick');
     }
     this.renderer.resize(window.innerWidth, window.innerHeight);
     this.world.render();

@@ -68,6 +68,7 @@ export default abstract class Entity {
 
   public createSnapshot() {
     var bodyAttributes = Object.assign(this.bodyAttributes, {
+      angle: this.body.getAngle(),
       position: this.getPosition(),
       velocity: this.body.getLinearVelocity(),
     })
@@ -79,5 +80,12 @@ export default abstract class Entity {
       fixtureAttributes: this.fixtureAttributes,
       textureName: this.textureName
     };
+  }
+
+  public updateFromSnapshot(snapshot) {
+    var bodyAttributes = snapshot.bodyAttributes;
+    this.body.setAngle(bodyAttributes.angle);
+    this.body.setPosition(bodyAttributes.position);
+    this.body.setLinearVelocity(bodyAttributes.velocity);
   }
 }

@@ -32,7 +32,6 @@ export default class MyWorld {
 
     var entities = {};
     entities[playerShip.guid] = playerShip;
-
     var asteroidRenderer = new RenderRelativeTo(playerShip);
     for(var x = -10; x < 10; x=x+2) {
       for(var y = -10; y < 10; y=y+2) {
@@ -54,7 +53,7 @@ export default class MyWorld {
     return new MyWorld(background, entities, playerShip.guid, world);
   }
 
-  static fromSnapshot(assets, snapshot) {
+  static fromSnapshot(assets, snapshot): MyWorld {
     var world = new World();
     var focusGuid = snapshot.focusGuid;
 
@@ -108,12 +107,20 @@ export default class MyWorld {
     var ship = Ship.create(
       assets,
       135,
-      [new RenderRelativeTo(this.entities[this.focusGuid])],
+      [new RenderRelativeTo(this.getFocus())],
       position,
       this.world
     );
     this.entities[ship.guid] = ship;
     return ship;
+  }
+
+  public getFocus() {
+    return this.findEntity(this.focusGuid);
+  }
+
+  public findEntity(index: number) {
+    return this.entities[index];
   }
 
   public tick(deltaTime) {

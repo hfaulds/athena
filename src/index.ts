@@ -3,7 +3,6 @@ import Core from './core'
 import Negotiation from './rtc/rtc_client_negotiation';
 import World from './World'
 
-import { EventEmitter } from 'events';
 import { Vec2 } from 'planck-js'
 import * as io from 'socket.io-client';
 import { Fsm } from 'machina';
@@ -60,7 +59,8 @@ new Fsm({
         this.negotiations[id] = negotiation;
 
         negotiation.on('receiveMessage', function(data) {
-          this.transition("loading", "joined", data);
+          negotiation.off();
+          this.transition("loading", "joined", negotiation, data);
         }.bind(this));
 
         negotiation.handle("connect");
@@ -78,16 +78,29 @@ new Fsm({
     },
 
     "joined" : {
-      _onEnter: function(snapshot, assets) {
+      _onEnter: function(negotiation, snapshot, assets) {
         var world = World.fromSnapshot(assets, snapshot);
-        Core.create(world).tick();
+
+        var core = Core.create(world)
+
+        negotiation.on('receiveMessage', function(snapshot) {
+          var entity = world.findEntity(snapshot.guid);
+          entity.updateFromSnapshot(snapshot)
+        });
+
+        core.on('tick', function() {
+          negotiation.sendMessage(world.getFocus().createSnapshot());
+        });
+
+        core.tick();
       },
     },
 
     "hosting" : {
       _onEnter: function(lobbyServer, token, assets) {
         var world = World.create(assets);
-        var core = Core.create(world).tick();
+        var core = Core.create(world);
+        core.tick()
         var players = [];
 
         lobbyServer.on('connection', function(id) {
@@ -96,8 +109,17 @@ new Fsm({
 
           negotiation.on('connected', function() {
             var ship = world.createPlayer(assets, Vec2(10, 10));
+            core.addToStage(ship);
             negotiation.reply('connected');
             negotiation.sendMessage(world.createSnapshot(ship.guid));
+            core.on('tick', function() {
+              negotiation.sendMessage(world.getFocus().createSnapshot());
+            });
+
+            negotiation.on('receiveMessage', function(snapshot) {
+              var entity = world.findEntity(snapshot.guid);
+              entity.updateFromSnapshot(snapshot)
+            });
           }.bind(this));
 
           negotiation.handle("connect");
