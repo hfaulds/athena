@@ -1,6 +1,8 @@
+import Assets from './assets'
 import Core from './core'
-
 import Negotiation from './rtc/rtc_client_negotiation';
+import World from './World'
+
 import { EventEmitter } from 'events';
 import * as io from 'socket.io-client';
 import { Fsm } from 'machina';
@@ -15,7 +17,7 @@ new Fsm({
     var lobbyServer = io(window.location.origin, opts);
 
     lobbyServer.on('hosting', function(token: string) {
-      this.transition("hosting", lobbyServer, token);
+      this.transition("loading", "hosting", lobbyServer, token);
     }.bind(this));
 
     lobbyServer.on('joining', function(id: number) {
@@ -57,23 +59,34 @@ new Fsm({
         this.negotiations[id] = negotiation;
 
         negotiation.on('receiveMessage', function(data) {
-          this.transition("joined", data);
+          this.transition("loading", "joined", data);
         }.bind(this));
 
         negotiation.handle("connect");
       }
     },
 
+    "loading": {
+      _onEnter: function() {
+        var args = Array.prototype.slice.call(arguments)
+        Assets.load(function(assets) {
+          var innerArgs = args.concat([assets]);
+          this.transition.apply(this, innerArgs);
+        }.bind(this));
+      }
+    },
+
     "joined" : {
-      _onEnter: function(snapshot) {
-        Core.create().loadWorld(snapshot);
+      _onEnter: function(snapshot, assets) {
+        var world = World.fromSnapshot(assets, snapshot);
+        Core.create(world).tick();
       },
     },
 
     "hosting" : {
-      _onEnter: function(lobbyServer, id, token) {
-        var core = Core.create();
-        core.newWorld();
+      _onEnter: function(lobbyServer, token, assets) {
+        var world = World.create(assets);
+        var core = Core.create(world).tick();
 
         lobbyServer.on('connection', function(id) {
           var negotiation = new Negotiation(lobbyServer, id, token);
@@ -81,12 +94,12 @@ new Fsm({
 
           negotiation.on('connected', function() {
             negotiation.reply('connected');
-            negotiation.sendMessage(core.createSnapshot());
+            negotiation.sendMessage(world.createSnapshot());
           }.bind(this));
 
           negotiation.handle("connect");
         }.bind(this));
-      }
-    },
+      },
+    }
   }
 });
