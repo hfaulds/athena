@@ -116,8 +116,8 @@ export default Fsm.extend({
     },
 
     "connected" : {
-      "sendMessage" : function(data) {
-        console.log("peer -> peer", this.id, data);
+      "sendMessage" : function(message) {
+        var data = JSON.stringify(message);
         if(this.simulatedPacketLoss > 0) {
           if(Math.random() > this.simulatedPacketLoss / 100) return;
         }
@@ -125,12 +125,12 @@ export default Fsm.extend({
         if(this.simulatedLatency > 0) {
           var sendMessageReal = function() {
             if(this.channel.readyState === "open") {
-              this.channel.send(JSON.stringify(data));
+              this.channel.send(data);
             }
           }.bind(this);
           setTimeout(sendMessageReal, this.simulatedLatency);
         } else {
-          this.channel.send(JSON.stringify(data));
+          this.channel.send(data);
         }
       },
       "receiveMessage" : function(data) {

@@ -27,19 +27,11 @@ export default class MyWorld {
       Vec2(-10, -10),
       world
     );
-    var ship = Ship.create(
-      assets,
-      135,
-      [new RenderRelativeTo(playerShip)],
-      Vec2(10, 10),
-      world
-    );
     var background = Background.create(playerShip);
     var focusGuid = playerShip.guid;
 
     var entities = {};
     entities[playerShip.guid] = playerShip;
-    entities[ship.guid] = ship;
 
     var asteroidRenderer = new RenderRelativeTo(playerShip);
     for(var x = -10; x < 10; x=x+2) {
@@ -101,17 +93,28 @@ export default class MyWorld {
     });
   }
 
-  public createSnapshot() {
+  public createSnapshot(focusGuid) {
     var entities = {};
     Object.values(this.entities).forEach(function(entity) {
       entities[entity.guid] = entity.createSnapshot();
     });
     return({
-      focusGuid: this.focusGuid,
+      focusGuid: focusGuid,
       entities: entities,
     })
   }
 
+  public createPlayer(assets, position: Vec2) {
+    var ship = Ship.create(
+      assets,
+      135,
+      [new RenderRelativeTo(this.entities[this.focusGuid])],
+      position,
+      this.world
+    );
+    this.entities[ship.guid] = ship;
+    return ship;
+  }
 
   public tick(deltaTime) {
     Object.values(this.entities).forEach(function(a) {

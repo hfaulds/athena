@@ -4,6 +4,7 @@ import Negotiation from './rtc/rtc_client_negotiation';
 import World from './World'
 
 import { EventEmitter } from 'events';
+import { Vec2 } from 'planck-js'
 import * as io from 'socket.io-client';
 import { Fsm } from 'machina';
 
@@ -87,14 +88,16 @@ new Fsm({
       _onEnter: function(lobbyServer, token, assets) {
         var world = World.create(assets);
         var core = Core.create(world).tick();
+        var players = [];
 
         lobbyServer.on('connection', function(id) {
           var negotiation = new Negotiation(lobbyServer, id, token);
           this.negotiations[id] = negotiation;
 
           negotiation.on('connected', function() {
+            var ship = world.createPlayer(assets, Vec2(10, 10));
             negotiation.reply('connected');
-            negotiation.sendMessage(world.createSnapshot());
+            negotiation.sendMessage(world.createSnapshot(ship.guid));
           }.bind(this));
 
           negotiation.handle("connect");
