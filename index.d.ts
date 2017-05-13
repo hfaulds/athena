@@ -17,3 +17,19 @@ interface Body {
   setAngle(a: number);
   setLinearVelocity(l: Vec2);
 }
+
+interface Key {
+  isDown: boolean;
+  isUp: boolean;
+}
+
+interface Input {
+  left: Key;
+  up: Key;
+  right: Key;
+  down: Key;
+}
+
+interface InputSource {
+  gatherInputs(): Array<Input>;
+}

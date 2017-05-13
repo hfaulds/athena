@@ -31,7 +31,6 @@ export default abstract class Entity {
       y: this.sprite.height / 2,
     });
 
-
     this.bodyAttributes = Object.assign({}, this.bodyAttributes);
     this.body = world.createBody(bodyAttributes);
 

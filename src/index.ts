@@ -79,17 +79,13 @@ new Fsm({
 
     "joined" : {
       _onEnter: function(negotiation, snapshot, assets) {
-        var world = World.fromSnapshot(assets, snapshot);
+        var world = World.fromSnapshot(assets, negotiation, snapshot);
 
         var core = Core.create(world)
 
         negotiation.on('receiveMessage', function(snapshot) {
           var entity = world.findEntity(snapshot.guid);
           entity.updateFromSnapshot(snapshot)
-        });
-
-        core.on('tick', function() {
-          negotiation.sendMessage(world.getFocus().createSnapshot());
         });
 
         core.tick();
@@ -108,17 +104,12 @@ new Fsm({
           this.negotiations[id] = negotiation;
 
           negotiation.on('connected', function() {
-            var ship = world.createPlayer(assets, Vec2(10, 10));
+            var ship = world.createPlayer(assets, Vec2(10, 10), negotiation);
             core.addToStage(ship);
             negotiation.reply('connected');
             negotiation.sendMessage(world.createSnapshot(ship.guid));
             core.on('tick', function() {
               negotiation.sendMessage(world.getFocus().createSnapshot());
-            });
-
-            negotiation.on('receiveMessage', function(snapshot) {
-              var entity = world.findEntity(snapshot.guid);
-              entity.updateFromSnapshot(snapshot)
             });
           }.bind(this));
 

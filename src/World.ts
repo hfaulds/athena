@@ -9,6 +9,7 @@ import rand from './util/rand'
 import RenderRelativeTo from './components/RenderRelativeTo'
 import RenderAtScreenCenter from './components/RenderAtScreenCenter'
 import KeyboardInput from './components/KeyboardInput'
+import { LocalInput, LocalSendingInput, RemoteInput } from './input/LocalInput'
 
 export default class MyWorld {
   constructor(
@@ -23,7 +24,7 @@ export default class MyWorld {
     var playerShip = Ship.create(
       assets,
       -315,
-      [new RenderAtScreenCenter(), new KeyboardInput()],
+      [new RenderAtScreenCenter(), new KeyboardInput(new LocalInput())],
       Vec2(-10, -10),
       world
     );
@@ -53,12 +54,12 @@ export default class MyWorld {
     return new MyWorld(background, entities, playerShip.guid, world);
   }
 
-  static fromSnapshot(assets, snapshot): MyWorld {
+  static fromSnapshot(assets, negotiation, snapshot): MyWorld {
     var world = new World();
     var focusGuid = snapshot.focusGuid;
 
     var focusSnapshot = snapshot.entities[focusGuid];
-    var focusComponents = [new RenderAtScreenCenter(), new KeyboardInput()];
+    var focusComponents = [new RenderAtScreenCenter(), new KeyboardInput(new LocalSendingInput(negotiation))];
     var focusEntity = EntityLoader.loadSnapshot(
       focusSnapshot,
       assets,
@@ -103,11 +104,11 @@ export default class MyWorld {
     })
   }
 
-  public createPlayer(assets, position: Vec2) {
+  public createPlayer(assets, position: Vec2, negotiation) {
     var ship = Ship.create(
       assets,
       135,
-      [new RenderRelativeTo(this.getFocus())],
+      [new RenderRelativeTo(this.getFocus()), new KeyboardInput(RemoteInput.listen(negotiation))],
       position,
       this.world
     );
