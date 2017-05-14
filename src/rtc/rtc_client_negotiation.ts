@@ -1,5 +1,6 @@
 import { Fsm } from 'machina';
 import { EventEmitter2 as EventEmitter } from 'eventemitter2';
+import * as Schema from './schema';
 import RTCPeerPromise from './rtc_peer_promise'
 //import RTCPeerPromise from './offline_promise'
 
@@ -137,7 +138,9 @@ export default Fsm.extend({
       },
       "receiveMessage" : function(data) {
         var message = JSON.parse(data);
-        this.messages.emit(message['messageType'], message['content'])
+        var messageType = message['messageType'];
+        var content = Schema[messageType].decode(message['content']);
+        this.messages.emit(messageType, content)
       },
       "disconnect" : function() {
         this.channel.close();
@@ -154,12 +157,12 @@ export default Fsm.extend({
     this.simulatedPacketLoss = packetLoss;
   },
 
-  sendMessage : function(messageType, data) {
+  sendMessage : function(messageType, content) {
     this.handle(
       'sendMessage',
       {
         messageType: messageType,
-        content: data,
+        content: Schema[messageType].encode(content),
       }
     );
   },

@@ -82,9 +82,8 @@ new Fsm({
 
         var core = Core.create(world)
 
-        negotiation.onMessage('playerSnapshot', function(snapshot) {
-          var entity = world.findEntity(snapshot.guid);
-          entity.updateFromSnapshot(snapshot)
+        negotiation.onMessage('worldSnapshot', function(snapshot) {
+          world.updateFromSnapshot(snapshot)
         });
 
         core.tick();
@@ -108,7 +107,7 @@ new Fsm({
             negotiation.reply('connected');
             negotiation.sendMessage('worldSnapshot', world.createSnapshot(ship.guid));
             core.on('tick', function() {
-              negotiation.sendMessage('playerSnapshot', world.getFocus().createSnapshot());
+              negotiation.sendMessage('worldSnapshot', world.createSnapshot(ship.guid));
             });
           }.bind(this));
 

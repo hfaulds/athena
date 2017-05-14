@@ -13,8 +13,8 @@ export default class Asteroid extends Entity {
     var bodyAttributes= {
       type : 'dynamic',
       angularDamping : 5.0,
-      position : position,
       linearVelocity : velocity,
+      position : position,
     };
     var fixtureAttributes = {
       density: 1000,

@@ -58,7 +58,7 @@ export default class MyWorld {
     var world = new World();
     var focusGuid = snapshot.focusGuid;
 
-    var focusSnapshot = snapshot.entities[focusGuid];
+    var focusSnapshot = snapshot.entities.find(function(entitySnapshot) { return entitySnapshot.guid == focusGuid });
     var focusComponents = [new RenderAtScreenCenter(), new KeyboardInput(new LocalSendingInput(negotiation))];
     var focusEntity = EntityLoader.loadSnapshot(
       focusSnapshot,
@@ -72,7 +72,7 @@ export default class MyWorld {
     var background = Background.create(focusEntity);
 
     var components = [new RenderRelativeTo(focusEntity)];
-    Object.values(snapshot.entities).forEach(function(entitySnapshot) {
+    snapshot.entities.forEach(function(entitySnapshot) {
       if (entitySnapshot !== focusSnapshot) {
         var entity = EntityLoader.loadSnapshot(
           entitySnapshot,
@@ -94,14 +94,19 @@ export default class MyWorld {
   }
 
   public createSnapshot(focusGuid) {
-    var entities = {};
-    Object.values(this.entities).forEach(function(entity) {
-      entities[entity.guid] = entity.createSnapshot();
+    var entities = Object.values(this.entities).map(function(entity) {
+      return entity.createSnapshot();
     });
     return({
       focusGuid: focusGuid,
       entities: entities,
     })
+  }
+
+  public updateFromSnapshot(snapshot) {
+    snapshot.entities.forEach(function(entitySnapshot) {
+      this.entities[entitySnapshot.guid].updateFromSnapshot(entitySnapshot);
+    }.bind(this));
   }
 
   public createPlayer(assets, position: Vec2, negotiation) {

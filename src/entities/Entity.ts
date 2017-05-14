@@ -31,7 +31,6 @@ export default abstract class Entity {
       y: this.sprite.height / 2,
     });
 
-    this.bodyAttributes = Object.assign({}, this.bodyAttributes);
     this.body = world.createBody(bodyAttributes);
 
     var mesh = assets["meshes"]["playerShip1"];
@@ -66,11 +65,13 @@ export default abstract class Entity {
   }
 
   public createSnapshot() {
-    var bodyAttributes = Object.assign(this.bodyAttributes, {
+    var bodyAttributes = {
       angle: this.body.getAngle(),
       position: this.getPosition(),
       velocity: this.body.getLinearVelocity(),
-    })
+      angularDamping: this.body.getAngularDamping(),
+      linearDamping: this.body.getLinearDamping(),
+    };
 
     return {
       type: this.constructor.name,
