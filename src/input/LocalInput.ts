@@ -57,7 +57,7 @@ export class LocalSendingInput extends LocalInput {
 
   public gatherInputs() {
     var inputs = super.gatherInputs();
-    this.negotiation.sendMessage(inputs);
+    this.negotiation.sendMessage('inputSnapshot', inputs);
     return inputs;
   }
 }
@@ -73,7 +73,7 @@ export class RemoteInput {
 
   static listen(negotiation) {
     var inputs = [];
-    negotiation.on('receiveMessage', function(remoteInputs) {
+    negotiation.onMessage('inputSnapshot', function(remoteInputs) {
       remoteInputs.forEach(function(input) {
         inputs.push(input);
       });

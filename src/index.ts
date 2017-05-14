@@ -58,8 +58,7 @@ new Fsm({
         var negotiation = new Negotiation(lobbyServer, id, token);
         this.negotiations[id] = negotiation;
 
-        negotiation.on('receiveMessage', function(data) {
-          negotiation.off();
+        negotiation.onceMessage('worldSnapshot', function(data) {
           this.transition("loading", "joined", negotiation, data);
         }.bind(this));
 
@@ -83,7 +82,7 @@ new Fsm({
 
         var core = Core.create(world)
 
-        negotiation.on('receiveMessage', function(snapshot) {
+        negotiation.onMessage('playerSnapshot', function(snapshot) {
           var entity = world.findEntity(snapshot.guid);
           entity.updateFromSnapshot(snapshot)
         });
@@ -107,9 +106,9 @@ new Fsm({
             var ship = world.createPlayer(assets, Vec2(10, 10), negotiation);
             core.addToStage(ship);
             negotiation.reply('connected');
-            negotiation.sendMessage(world.createSnapshot(ship.guid));
+            negotiation.sendMessage('worldSnapshot', world.createSnapshot(ship.guid));
             core.on('tick', function() {
-              negotiation.sendMessage(world.getFocus().createSnapshot());
+              negotiation.sendMessage('playerSnapshot', world.getFocus().createSnapshot());
             });
           }.bind(this));
 
