@@ -1,6 +1,6 @@
 import { Fsm } from 'machina';
 import { EventEmitter2 as EventEmitter } from 'eventemitter2';
-import * as Schema from './schema';
+import { Schema } from './schema';
 import RTCPeerPromise from './rtc_peer_promise'
 //import RTCPeerPromise from './offline_promise'
 
@@ -119,8 +119,9 @@ export default Fsm.extend({
     },
 
     "connected" : {
-      "sendMessage" : function(message) {
-        var data = JSON.stringify(message);
+      "sendMessage" : function(messageType, data) {
+        var data = Schema.encode(messageType, data)
+
         if(this.simulatedPacketLoss > 0) {
           if(Math.random() > this.simulatedPacketLoss / 100) return;
         }
@@ -137,9 +138,8 @@ export default Fsm.extend({
         }
       },
       "receiveMessage" : function(data) {
-        var message = JSON.parse(data);
-        var messageType = message['messageType'];
-        var content = Schema[messageType].decode(message['content']);
+        var messageType = Schema.readSchemaName(data);
+        var content = Schema.decode(messageType, data);
         this.messages.emit(messageType, content)
       },
       "disconnect" : function() {
@@ -158,13 +158,7 @@ export default Fsm.extend({
   },
 
   sendMessage : function(messageType, content) {
-    this.handle(
-      'sendMessage',
-      {
-        messageType: messageType,
-        content: Schema[messageType].encode(content),
-      }
-    );
+    this.handle('sendMessage', messageType, content);
   },
 
   onMessage : function(messageType, callback) {
