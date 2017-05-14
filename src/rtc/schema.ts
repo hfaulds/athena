@@ -1,5 +1,8 @@
 import * as Schema from 'schemapack';
 
+var Vec2 = { x: 'float32', y: 'float32' };
+var Key = { isDown: 'bool', isUp: 'bool' };
+
 export const worldSnapshot = Schema.build({
   focusGuid: 'string',
   entities: [
@@ -8,8 +11,8 @@ export const worldSnapshot = Schema.build({
       guid: 'string',
       bodyAttributes: {
         angle: 'float32',
-        position: { x: 'float32', y: 'float32' },
-        velocity: { x: 'float32', y: 'float32' },
+        position: Vec2,
+        velocity: Vec2,
         angularDamping: 'float32',
         linearDamping: 'float32',
       },
@@ -23,9 +26,9 @@ export const worldSnapshot = Schema.build({
 
 export const inputSnapshot = Schema.build([
   {
-    left: { isDown: 'bool', isUp: 'bool' },
-    up: { isDown: 'bool', isUp: 'bool' },
-    right: { isDown: 'bool', isUp: 'bool' },
-    down: { isDown: 'bool', isUp: 'bool' },
+    left: Key,
+    up: Key,
+    right: Key,
+    down: Key,
   }
 ]);

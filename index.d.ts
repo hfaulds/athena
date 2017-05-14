@@ -12,6 +12,8 @@ interface Body {
   getPosition(): Vec2;
   setPosition(v: Vec2): void;
   getLinearVelocity(): Vec2;
+  getAngularDamping(): Vec2,
+  getLinearDamping(): Vec2,
   getAngle(): number;
   createFixture(polygon, attributes): void;
   setAngle(a: number);
