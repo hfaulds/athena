@@ -60,8 +60,12 @@ export default abstract class Entity {
     return { x: this.sprite.x, y: this.sprite.y };
   }
 
-  public addToStage(stage: PIXI.Container) {
-    stage.addChild(this.sprite);
+  public getSprite() {
+    return this.sprite;
+  }
+
+  public getBody() {
+    return this.body;
   }
 
   public createSnapshot() {

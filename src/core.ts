@@ -32,7 +32,11 @@ export default class Core extends EventEmitter {
   }
 
   public addToStage(entity: Entity) {
-    entity.addToStage(this.stage);
+    this.stage.addChild(entity.getSprite());
+  }
+
+  public removeEntity(entity) {
+    this.world.removeEntity(this.stage, entity);
   }
 
   public tick() {

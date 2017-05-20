@@ -25,7 +25,7 @@ export default class MyWorld {
       assets,
       -315,
       [new RenderAtScreenCenter(), new KeyboardInput(new LocalInput())],
-      Vec2(-10, -10),
+      Vec2(-5, -5),
       world
     );
     var background = Background.create(playerShip);
@@ -34,9 +34,9 @@ export default class MyWorld {
     var entities = {};
     entities[playerShip.guid] = playerShip;
     var asteroidRenderer = new RenderRelativeTo(playerShip);
-    for(var x = -10; x < 10; x=x+2) {
-      for(var y = -10; y < 10; y=y+2) {
-        if (! (Math.abs(x) == 10 && Math.abs(y) == 10) ) {
+    for(var x = -5; x < 5; x=x+2) {
+      for(var y = -5; y < 5; y=y+2) {
+        if (! (Math.abs(x) == 5 && Math.abs(y) == 5) ) {
           x = x + rand(1.9);
           y = y + rand(1.9);
           var position = Vec2(x, y);
@@ -87,9 +87,9 @@ export default class MyWorld {
   }
 
   public addToStage(stage) {
-    this.background.addToStage(stage);
-    Object.values(this.entities).forEach(function(a) {
-      a.addToStage(stage)
+    stage.addChild(this.background.getSprite());
+    Object.values(this.entities).forEach(function(e) {
+      stage.addChild(e.getSprite());
     });
   }
 
@@ -103,10 +103,39 @@ export default class MyWorld {
     })
   }
 
-  public updateFromSnapshot(snapshot) {
+  public updateFromSnapshot(assets, snapshot) {
+    var validGuids = new Set();
+    var newEntities = [];
     snapshot.entities.forEach(function(entitySnapshot) {
-      this.entities[entitySnapshot.guid].updateFromSnapshot(entitySnapshot);
+      validGuids.add(entitySnapshot.guid);
+      var entity = this.entities[entitySnapshot.guid];
+      if (entity) {
+        entity.updateFromSnapshot(entitySnapshot);
+      } else {
+        var focusEntity = this.getFocus();
+        entity = EntityLoader.loadSnapshot(
+          entitySnapshot,
+          assets,
+          [new RenderRelativeTo(focusEntity)],
+          this.world,
+        );
+        this.entities[entity.guid] = entity;
+        newEntities.push(entity);
+      }
     }.bind(this));
+
+    var removedEntities = [];
+    Object.values(this.entities).forEach(function(entity) {
+      if (!validGuids.has(entity.guid)) {
+        removedEntities.push(entity);
+        delete this.entities[entity.guid];
+      }
+    }.bind(this));
+
+    return({
+      added: newEntities,
+      removed: removedEntities,
+    });
   }
 
   public createPlayer(assets, position: Vec2, negotiation) {
@@ -119,6 +148,12 @@ export default class MyWorld {
     );
     this.entities[ship.guid] = ship;
     return ship;
+  }
+
+  public removeEntity(stage, entity) {
+    this.world.destroyBody(entity.getBody());
+    stage.removeChild(entity.getSprite());
+    delete this.entities[entity.guid];
   }
 
   public getFocus() {

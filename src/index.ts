@@ -83,7 +83,13 @@ new Fsm({
         var core = Core.create(world)
 
         negotiation.onMessage('worldSnapshot', function(snapshot) {
-          world.updateFromSnapshot(snapshot)
+          var changes = world.updateFromSnapshot(assets, snapshot);
+          changes.added.forEach(function(e) {
+            core.addToStage(e);
+          });
+          changes.removed.forEach(function(e) {
+            core.removeEntity(e);
+          });
         });
 
         core.tick();
@@ -95,21 +101,25 @@ new Fsm({
         var world = World.create(assets);
         var core = Core.create(world);
         core.tick()
-        var players = [];
 
         lobbyServer.on('connection', function(id) {
           var negotiation = new Negotiation(lobbyServer, id, token);
           this.negotiations[id] = negotiation;
 
           negotiation.on('connected', function() {
-            var ship = world.createPlayer(assets, Vec2(10, 10), negotiation);
+            var ship = world.createPlayer(assets, Vec2(5, 5), negotiation);
             core.addToStage(ship);
             negotiation.reply('connected');
             negotiation.sendMessage('worldSnapshot', world.createSnapshot(ship.guid));
-            core.on('tick', function() {
+            var tick = function() {
               negotiation.sendMessage('worldSnapshot', world.createSnapshot(ship.guid));
+            };
+            negotiation.on('disconnected', function() {
+              core.removeEntity(ship);
+              core.removeListener('tick', tick);
             });
-          }.bind(this));
+            core.on('tick', tick);
+          });
 
           negotiation.handle("connect");
         }.bind(this));

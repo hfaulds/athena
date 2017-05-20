@@ -18,8 +18,8 @@ export default class Background {
     return new Background(sprite, source);
   }
 
-  public addToStage(stage: PIXI.Container) {
-    stage.addChild(this.sprite);
+  public getSprite() {
+    return this.sprite;
   }
 
   public render() {
