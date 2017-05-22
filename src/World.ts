@@ -5,6 +5,7 @@ import Asteroid from './entities/Asteroid'
 import Background from './entities/Background'
 import Ship from './entities/Ship'
 import EntityLoader from './EntityLoader'
+import UI from './UI'
 import rand from './util/rand'
 import RenderRelativeTo from './components/RenderRelativeTo'
 import RenderAtScreenCenter from './components/RenderAtScreenCenter'
@@ -14,10 +15,29 @@ import { LocalInput, LocalSendingInput, RemoteInput } from './input/LocalInput'
 export default class MyWorld {
   constructor(
     private readonly background: Background,
+    private readonly ui: UI,
     private readonly entities,
     private readonly focusGuid,
     private readonly world,
-  ) { }
+  ) {
+    world.on('pre-solve', function(contact) {
+      var fixtureA = contact.getFixtureA();
+      var fixtureB = contact.getFixtureB();
+
+      var entityA = this.findEntity(fixtureA.getUserData());
+      var entityB = this.findEntity(fixtureB.getUserData());
+
+      var ship;
+      if (entityA instanceof Ship) {
+        ship = entityA;
+      } else if(entityB instanceof Ship) {
+        ship = entityB;
+      }
+      if (ship) {
+        ship.health -= 1;
+      }
+    }.bind(this));
+  }
 
   static create(assets) {
     var world = new World();
@@ -29,6 +49,7 @@ export default class MyWorld {
       world
     );
     var background = Background.create(playerShip);
+    var ui = new UI(playerShip);
     var focusGuid = playerShip.guid;
 
     var entities = {};
@@ -51,7 +72,7 @@ export default class MyWorld {
       }
     }
 
-    return new MyWorld(background, entities, playerShip.guid, world);
+    return new MyWorld(background, ui, entities, playerShip.guid, world);
   }
 
   static fromSnapshot(assets, negotiation, snapshot): MyWorld {
@@ -70,6 +91,7 @@ export default class MyWorld {
     entities[focusGuid] = focusEntity;
 
     var background = Background.create(focusEntity);
+    var ui = new UI(focusEntity);
 
     var components = [new RenderRelativeTo(focusEntity)];
     snapshot.entities.forEach(function(entitySnapshot) {
@@ -83,11 +105,12 @@ export default class MyWorld {
         entities[entity.guid] = entity;
       }
     }, this);
-    return new MyWorld(background, entities, focusGuid, world);
+    return new MyWorld(background, ui, entities, focusGuid, world);
   }
 
   public addToStage(stage) {
     stage.addChild(this.background.getSprite());
+    stage.addChild(this.ui.getSprite());
     Object.values(this.entities).forEach(function(e) {
       stage.addChild(e.getSprite());
     });
@@ -175,6 +198,7 @@ export default class MyWorld {
     Object.values(this.entities).forEach(function(a) {
       a.render()
     });
+    this.ui.render();
     this.background.render();
   }
 }

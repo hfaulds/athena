@@ -12,7 +12,9 @@ function createGuid() {
 
 export default abstract class Entity {
   private sprite: PIXI.Sprite;
-  private body: Body;
+  public readonly body: Body;
+
+  public health: number = 100;
 
   constructor(
     assets,
@@ -37,6 +39,7 @@ export default abstract class Entity {
     var polygon = Polygon(mesh.map(function(p) {
       return Vec2(p[0], p[1]);
     }));
+    fixtureAttributes["userData"] = guid;
     this.body.createFixture(polygon, fixtureAttributes);
   }
 
