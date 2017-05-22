@@ -25,7 +25,7 @@ export default class MyWorld {
       assets,
       -315,
       [new RenderAtScreenCenter(), new KeyboardInput(new LocalInput())],
-      Vec2(-5, -5),
+      Vec2(-9, -9),
       world
     );
     var background = Background.create(playerShip);
@@ -34,11 +34,11 @@ export default class MyWorld {
     var entities = {};
     entities[playerShip.guid] = playerShip;
     var asteroidRenderer = new RenderRelativeTo(playerShip);
-    for(var x = -5; x < 5; x=x+2) {
-      for(var y = -5; y < 5; y=y+2) {
-        if (! (Math.abs(x) == 5 && Math.abs(y) == 5) ) {
-          x = x + rand(1.9);
-          y = y + rand(1.9);
+    for(var x = -9; x < 9; x=x+3) {
+      for(var y = -9; y < 9; y=y+3) {
+        if (! (Math.abs(x) == 9 && Math.abs(y) == 9) ) {
+          x = x + rand(2.9);
+          y = y + rand(2.9);
           var position = Vec2(x, y);
           var asteroid = Asteroid.createRandom(
             assets,

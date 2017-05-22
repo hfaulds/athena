@@ -107,7 +107,7 @@ new Fsm({
           this.negotiations[id] = negotiation;
 
           negotiation.on('connected', function() {
-            var ship = world.createPlayer(assets, Vec2(5, 5), negotiation);
+            var ship = world.createPlayer(assets, Vec2(9, 9), negotiation);
             core.addToStage(ship);
             negotiation.reply('connected');
             negotiation.sendMessage('worldSnapshot', world.createSnapshot(ship.guid));
